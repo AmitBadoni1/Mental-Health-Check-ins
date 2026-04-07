@@ -1,0 +1,26 @@
+{
+  "name": "mental-health-checkins",
+  "version": "1.0.0",
+  "description": "Mental Health Check-in Website",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "next": "^14.0.0",
+    "pg": "^8.11.0",
+    "dotenv": "^16.3.1",
+    "aws-sdk": "^2.1500.0",
+    "uuid": "^9.0.1",
+    "bcryptjs": "^2.4.3"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.31",
+    "tailwindcss": "^3.3.6"
+  }
+}
