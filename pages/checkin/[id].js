@@ -13,7 +13,7 @@ const MOVIE_QUESTIONS = [
 
 // Stress prompts
 const STRESS_QUESTIONS = [
-  "What are some tasks which are approaching deadline? Focus on one and describe it step by step.",
+  "What are some tasks which are approaching deadline?",
   "Do they require a lot of work to be finished?",
   "Is it stressful to work on them?",
   "What exactly is making it difficult?"
@@ -325,6 +325,27 @@ export default function CheckinPage() {
     }
   };
 
+  const submitCheckin = async () => {
+    try {
+      const response = await fetch('/api/checkin-submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          checkinId: id,
+          surveyResponses: surveyRatings,
+          recordings: audioChunksRef.current.length,
+          submittedAt: new Date().toISOString()
+        })
+      });
+
+      if (!response.ok) {
+        console.error('Failed to submit check-in');
+      }
+    } catch (error) {
+      console.error('Submit error:', error);
+    }
+  };
+
   /* ------------------ STROOP ------------------ */
 
   const randomStroop = () => {
@@ -344,7 +365,7 @@ export default function CheckinPage() {
 
   const startStroop = async () => {
     setStep("stroop");
-    setStroopTime(30);
+    setStroopTime(45);
 
     await startRecording();
 
@@ -444,12 +465,18 @@ export default function CheckinPage() {
   useEffect(() => {
     if (step !== "thank-you") return;
 
-    const timeout = setTimeout(() => {
-      router.push('/dashboard');
-    }, 1200);
+    const submitAndRedirect = async () => {
+      await submitCheckin();
+      
+      const timeout = setTimeout(() => {
+        router.push('/dashboard');
+      }, 3000);
 
-    return () => clearTimeout(timeout);
-  }, [step, router]);
+      return () => clearTimeout(timeout);
+    };
+
+    submitAndRedirect();
+  }, [step, router, id]);
 
   /* ------------------ UI ------------------ */
 
@@ -617,7 +644,7 @@ export default function CheckinPage() {
 
           {step === "mid-survey" && (
             <>
-              <h2 className="text-lg font-bold mb-4">Deadline survey</h2>
+              <h2 className="text-lg font-bold mb-4">Mid check-in Survey</h2>
               <p className="text-gray-600 mb-4">
                 Please rate how stressed you felt during the reaction task and during the deadline task.
               </p>
