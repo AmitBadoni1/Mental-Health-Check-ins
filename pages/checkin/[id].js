@@ -261,7 +261,7 @@ export default function CheckinPage() {
       if ((step === "movie" || step === "stress") && recordingSecondsRef.current < 45) {
         if (avg < 10) {
           silenceAccumulatorRef.current += 0.2;
-          if (silenceAccumulatorRef.current >= 7) {
+          if (silenceAccumulatorRef.current >= 10) {
             handleSilenceTrigger();
             silenceAccumulatorRef.current = 0;
           }
