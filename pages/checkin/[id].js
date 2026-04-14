@@ -12,7 +12,7 @@ const MOVIE_QUESTIONS = [
 ];
 
 
-// Stress prompts
+// Original stress prompts (Check-in 1)
 const STRESS_QUESTIONS = [
   "What are some tasks which are approaching deadline?",
   "What is the work required to finish them?",
@@ -20,13 +20,28 @@ const STRESS_QUESTIONS = [
   "What exactly is making them difficult?"
 ];
 
+
+const STRESS2_QUESTIONS = [
+  "What are some of the conversations in the past few days that did not go well?",
+  "What could you have done differently?",
+  "Why do they affect you?"
+];
+
+// Baseline stays same for both check-ins
 const BASELINE_QUESTIONS_BY_CHECKIN = {
+  1: MOVIE_QUESTIONS,
+  2: MOVIE_QUESTIONS,
   default: MOVIE_QUESTIONS,
 };
 
+
+// 👇 Key change here
 const DEADLINE_QUESTIONS_BY_CHECKIN = {
+  1: STRESS_QUESTIONS,            // Check-in 1 → original stress
+  2: STRESS2_QUESTIONS,   // Check-in 2 → new flow
   default: STRESS_QUESTIONS,
 };
+
 
 const getBaselineQuestions = (checkinNumber) => {
   return BASELINE_QUESTIONS_BY_CHECKIN[checkinNumber] || BASELINE_QUESTIONS_BY_CHECKIN.default;
@@ -35,6 +50,7 @@ const getBaselineQuestions = (checkinNumber) => {
 const getDeadlineQuestions = (checkinNumber) => {
   return DEADLINE_QUESTIONS_BY_CHECKIN[checkinNumber] || DEADLINE_QUESTIONS_BY_CHECKIN.default;
 };
+
 
 const PRE_POST_SURVEY_PROMPT =
   "How stressed do you feel right now? 1 means not stressed at all, as if you were on vacation with no tasks. 5 means extremely stressed, as if you had 10 important deadlines at once.";
