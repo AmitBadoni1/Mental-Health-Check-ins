@@ -125,7 +125,7 @@ export default function Dashboard() {
                             ? `Completed on ${new Date(checkin.completedAt).toLocaleDateString()}`
                             : checkin.isUnlocked
                             ? 'Available now'
-                            : `Unlocks on ${new Date(checkin.unlocked_at).toLocaleDateString()}`}
+                            : 'Locked until the prior check-in is completed'}
                         </p>
                       </div>
                     </div>

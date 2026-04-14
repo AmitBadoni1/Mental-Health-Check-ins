@@ -31,7 +31,7 @@ export default async function handler(req, res) {
         id: c.id,
         number: c.checkin_number,
         isCompleted: c.is_completed,
-        isUnlocked: new Date(c.unlocked_at) <= new Date(),
+        isUnlocked: c.checkin_number === 1 || new Date(c.unlocked_at) <= new Date(),
         completedAt: c.completed_at,
         unlocked_at: c.unlocked_at,
       }));
