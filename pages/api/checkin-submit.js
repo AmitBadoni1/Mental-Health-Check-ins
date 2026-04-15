@@ -15,7 +15,7 @@ const base64ToBuffer = (base64) => Buffer.from(base64, 'base64');
 export default async function handler(req, res) {
   if (req.method === 'POST') {
     const { sessionId } = req.cookies;
-    const { checkinId, surveyResponses, audioData, submittedAt } = req.body;
+    const { checkinId, surveyResponses, audioData, audioUrls, submittedAt } = req.body;
 
     console.log('checkin-submit request', {
       method: req.method,
@@ -85,7 +85,9 @@ export default async function handler(req, res) {
         console.warn('checkin-submit: no audioData received');
       }
 
-      if (audioData?.baseline) {
+      if (audioUrls?.baseline) {
+        audioLinks.baseline = audioUrls.baseline;
+      } else if (audioData?.baseline) {
         audioLinks.baseline = await uploadToS3(
           `${username}-checkin-${checkin.checkin_number}-baseline.wav`,
           base64ToBuffer(audioData.baseline),
@@ -94,7 +96,9 @@ export default async function handler(req, res) {
         console.log('uploaded baseline', { url: audioLinks.baseline });
       }
 
-      if (audioData?.stroop) {
+      if (audioUrls?.stroop) {
+        audioLinks.stroop = audioUrls.stroop;
+      } else if (audioData?.stroop) {
         audioLinks.stroop = await uploadToS3(
           `${username}-checkin-${checkin.checkin_number}-stroop.wav`,
           base64ToBuffer(audioData.stroop),
@@ -103,7 +107,9 @@ export default async function handler(req, res) {
         console.log('uploaded stroop', { url: audioLinks.stroop });
       }
 
-      if (audioData?.deadline) {
+      if (audioUrls?.deadline) {
+        audioLinks.deadline = audioUrls.deadline;
+      } else if (audioData?.deadline) {
         audioLinks.deadline = await uploadToS3(
           `${username}-checkin-${checkin.checkin_number}-deadline.wav`,
           base64ToBuffer(audioData.deadline),
@@ -112,7 +118,9 @@ export default async function handler(req, res) {
         console.log('uploaded deadline', { url: audioLinks.deadline });
       }
 
-      if (audioData?.reading) {
+      if (audioUrls?.reading) {
+        audioLinks.reading = audioUrls.reading;
+      } else if (audioData?.reading) {
         audioLinks.reading = await uploadToS3(
           `${username}-checkin-${checkin.checkin_number}-reading.wav`,
           base64ToBuffer(audioData.reading),
