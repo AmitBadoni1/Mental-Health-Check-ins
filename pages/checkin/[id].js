@@ -56,8 +56,8 @@ const PRE_POST_SURVEY_PROMPT =
   "How stressed do you feel right now? 1 means not stressed at all, as if you were on vacation with no tasks. 5 means extremely stressed, as if you had 10 important deadlines at once.";
 
 const MID_SURVEY_QUESTIONS = [
-  "During the reaction task, how stressed did you feel?",
-  "During the deadline task, how stressed did you feel?"
+  "During the color naming task, how stressed did you feel?",
+  "During the task about deadlines, how stressed did you feel?"
 ];
 const HAPPY_TEXT = `
 On a quiet evening, a student sat by the window and looked outside as the sky slowly changed from orange to deep blue.
@@ -740,6 +740,10 @@ export default function CheckinPage() {
                   Stop Recording
                 </button>
               )}
+
+              <p className="text-sm text-gray-500 mt-3">
+                After 45 seconds, you will be able to stop the recording.
+              </p>
             </>
           )}
 
@@ -791,7 +795,7 @@ export default function CheckinPage() {
             <>
               <h2 className="text-lg font-bold mb-4">Mid check-in Survey</h2>
               <p className="text-gray-600 mb-4">
-                Please rate how stressed you felt during the reaction task and during the deadline task.
+                Please rate how stressed you felt during the color naming task and during the task that asked about deadlines.
               </p>
 
               {[MID_SURVEY_QUESTIONS[0], MID_SURVEY_QUESTIONS[1]].map((question, index) => (
