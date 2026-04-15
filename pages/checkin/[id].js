@@ -139,6 +139,13 @@ export default function CheckinPage() {
     reading: null,
   });
 
+  const [audioUrls, setAudioUrls] = useState({
+    baseline: null,
+    stroop: null,
+    deadline: null,
+    reading: null,
+  });
+
   const [submitError, setSubmitError] = useState(null);
 
   const [silenceSeconds, setSilenceSeconds] = useState(0);
@@ -261,7 +268,7 @@ export default function CheckinPage() {
       if ((step === "movie" || step === "stress") && recordingSecondsRef.current < 45) {
         if (avg < 10) {
           silenceAccumulatorRef.current += 0.2;
-          if (silenceAccumulatorRef.current >= 10) {
+          if (silenceAccumulatorRef.current >= 7) {
             handleSilenceTrigger();
             silenceAccumulatorRef.current = 0;
           }
@@ -416,11 +423,31 @@ export default function CheckinPage() {
         reader.readAsDataURL(blob);
       });
 
-      const audioData = {};
+      const uploadAudioTask = async (task, blob) => {
+        const base64 = await blobToBase64(blob);
+        const response = await fetch('/api/checkin-upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fileName: `checkin-${checkinNumber}-${task}.wav`,
+            base64Audio: base64,
+            fileType: 'audio/wav'
+          })
+        });
+
+        const json = await response.json();
+        if (!response.ok) {
+          throw new Error(json.error || 'Audio upload failed');
+        }
+
+        setAudioUrls(prev => ({ ...prev, [task]: json.url }));
+        return json.url;
+      };
+
+      const audioUrlsToSend = { ...audioUrls };
       for (const task of ['baseline', 'stroop', 'deadline', 'reading']) {
-        const blob = audioBlobs[task];
-        if (blob) {
-          audioData[task] = await blobToBase64(blob);
+        if (!audioUrlsToSend[task] && audioBlobs[task]) {
+          audioUrlsToSend[task] = await uploadAudioTask(task, audioBlobs[task]);
         }
       }
 
@@ -431,7 +458,7 @@ export default function CheckinPage() {
           checkinId: id,
           checkinNumber,
           surveyResponses: surveyRatings,
-          audioData,
+          audioUrls: audioUrlsToSend,
           submittedAt: new Date().toISOString()
         })
       });
