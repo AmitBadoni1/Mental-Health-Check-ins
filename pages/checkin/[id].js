@@ -989,8 +989,11 @@ export default function CheckinPage() {
           {step === "thank-you" && (
             <>
               <h2 className="text-lg font-bold mb-4">Thank you!</h2>
-              <p className="text-gray-600">
-                Your recording and check-in responses have been submitted. Redirecting you to the main screen.
+              <p className="text-gray-600 mb-3">
+                Your recording and check-in responses are being been submitted. Redirecting you to the main screen.
+              </p>
+              <p className="text-red-600 font-semibold">
+                Please DO NOT close this window.
               </p>
             </>
           )}
