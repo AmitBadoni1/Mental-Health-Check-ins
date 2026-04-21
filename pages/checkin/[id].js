@@ -191,10 +191,10 @@ const mathCountdownRef = useRef(null);
 
 const ARITHMETIC_SEQUENCE = [
   // Simple arithmetic
-  { q: "7 + 5", d: 0.5 },
-  { q: "14 - 6", d: 0.5 },
-  { q: "9 + 8", d: 0.5 },
-  { q: "18 - 7", d: 0.5 },
+  { q: "7 + 5", d: 1 },
+  { q: "14 - 6", d: 1 },
+  { q: "9 + 8", d: 1 },
+  { q: "18 - 7", d: 1 },
 
   // More complex arithmetic
   { q: "27 + 162", d: 3 },
