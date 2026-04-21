@@ -27,6 +27,13 @@ const STRESS2_QUESTIONS = [
   "Why do they affect you?"
 ];
 
+const STRESS3_QUESTIONS = [
+  "What is something coming up in the near future that you feel uncertain about?",
+  "What are the possible outcomes you are worried about?",
+  "What makes this situation feel out of your control?",
+  "How do you think things could go wrong?"
+];
+
 // Baseline stays same for both check-ins
 const BASELINE_QUESTIONS_BY_CHECKIN = {
   1: MOVIE_QUESTIONS,
@@ -38,7 +45,8 @@ const BASELINE_QUESTIONS_BY_CHECKIN = {
 // 👇 Key change here
 const DEADLINE_QUESTIONS_BY_CHECKIN = {
   1: STRESS_QUESTIONS,            // Check-in 1 → original stress
-  2: STRESS2_QUESTIONS,   // Check-in 2 → new flow
+  2: STRESS2_QUESTIONS,
+  3: STRESS3_QUESTIONS,// Check-in 2 → new flow
   default: STRESS_QUESTIONS,
 };
 
@@ -56,8 +64,8 @@ const PRE_POST_SURVEY_PROMPT =
   "How stressed do you feel right now? 1 means not stressed at all, as if you were on vacation with no tasks. 5 means extremely stressed, as if you had 10 important deadlines at once.";
 
 const MID_SURVEY_QUESTIONS = [
-  "During the color naming task, how stressed did you feel?",
-  "During the task about deadlines, how stressed did you feel?"
+  "During the reaction task, how stressed did you feel?",
+  "During the second speaking task, how stressed did you feel?"
 ];
 const HAPPY_TEXT = `
 On a quiet evening, a student sat by the window and looked outside as the sky slowly changed from orange to deep blue.
@@ -84,6 +92,7 @@ const STROOP_COLOR_MAP = {
   BLUE: "text-blue-500",
   YELLOW: "text-yellow-500"
 };
+
 
 /* ------------------ TTS ------------------ */
 
@@ -172,6 +181,85 @@ export default function CheckinPage() {
   const stroopRef = useRef(null);
   const stroopCountdownRef = useRef(null);
 
+  
+  /* ------------------ ARITHMETIC ------------------ */
+  
+  const [mathQuestion, setMathQuestion] = useState("");
+const [mathTime, setMathTime] = useState(45);
+const mathIntervalRef = useRef(null);
+const mathCountdownRef = useRef(null);
+
+const ARITHMETIC_SEQUENCE = [
+  // Simple arithmetic
+  { q: "7 + 5", d: 3 },
+  { q: "14 - 6", d: 3 },
+  { q: "9 + 8", d: 3 },
+  { q: "18 - 7", d: 3 },
+
+  // More complex arithmetic
+  { q: "27 + 16", d: 4 },
+  { q: "42 - 19", d: 4 },
+  { q: "38 + 27", d: 4 },
+  { q: "63 - 28", d: 4 },
+
+  // Simple multiplication
+  { q: "4 × 6", d: 3 },
+  { q: "7 × 8", d: 3 },
+  { q: "9 × 3", d: 3 },
+
+  // Tough multiplication
+  { q: "12 × 7", d: 5 },
+  { q: "14 × 6", d: 5 },
+  { q: "13 × 8", d: 5 }
+];
+// Total = 45 seconds
+
+const startArithmetic = async () => {
+  setStep("arithmetic");
+  setMathTime(45);
+
+  if (mathIntervalRef.current) clearTimeout(mathIntervalRef.current);
+  if (mathCountdownRef.current) clearInterval(mathCountdownRef.current);
+
+  await startRecording("stroop"); // reuse slot
+
+  let index = 0;
+
+  const showNextQuestion = () => {
+    if (index >= ARITHMETIC_SEQUENCE.length) {
+      return;
+    }
+
+    setMathQuestion(ARITHMETIC_SEQUENCE[index].q);
+    const delay = ARITHMETIC_SEQUENCE[index].d * 1000;
+    index += 1;
+
+    if (index < ARITHMETIC_SEQUENCE.length) {
+      mathIntervalRef.current = setTimeout(showNextQuestion, delay);
+    }
+  };
+
+  showNextQuestion();
+
+  mathCountdownRef.current = setInterval(() => {
+    setMathTime(prev => {
+      if (prev <= 1) {
+        if (mathCountdownRef.current) {
+          clearInterval(mathCountdownRef.current);
+          mathCountdownRef.current = null;
+        }
+        if (mathIntervalRef.current) {
+          clearTimeout(mathIntervalRef.current);
+          mathIntervalRef.current = null;
+        }
+        stopRecording("stress-intro");
+        return 0;
+      }
+      return prev - 1;
+    });
+  }, 1000);
+};
+  
   // Breathing
   const [breathPhase, setBreathPhase] = useState("Inhale");
   const [breathTime, setBreathTime] = useState(30);
@@ -503,7 +591,8 @@ export default function CheckinPage() {
   const startStroop = async () => {
     setStep("stroop");
     setStroopTime(45);
-
+    if (mathIntervalRef.current) clearTimeout(mathIntervalRef.current);
+    if (mathCountdownRef.current) clearInterval(mathCountdownRef.current);
     await startRecording('stroop');
 
     const update = () => {
@@ -512,6 +601,8 @@ export default function CheckinPage() {
       setStroopColor(color);
 
       stroopRef.current = setTimeout(update, 800 + Math.random() * 400);
+
+      
     };
 
     update();
@@ -585,6 +676,8 @@ export default function CheckinPage() {
   useEffect(() => {
     return () => {
       if (stroopRef.current) clearTimeout(stroopRef.current);
+      if (mathIntervalRef.current) clearTimeout(mathIntervalRef.current);
+      if (mathCountdownRef.current) clearInterval(mathCountdownRef.current);
       if (stroopCountdownRef.current) clearInterval(stroopCountdownRef.current);
       if (breathLoopRef.current) clearTimeout(breathLoopRef.current);
       if (breathCountdownRef.current) clearInterval(breathCountdownRef.current);
@@ -732,7 +825,13 @@ export default function CheckinPage() {
               {isRecording && recordingSeconds >= 45 && (
                 <button
                   onClick={() => {
-                    if (step === "movie") stopRecording("stroop-intro");
+                    if (step === "movie") {
+                        if (checkinNumber === 3) {
+                          stopRecording("arithmetic-intro");
+                        } else {
+                          stopRecording("stroop-intro");
+                        }
+                      }
                     else stopRecording("mid-survey");
                   }}
                   className="bg-red-500 text-white w-full py-3 rounded-lg"
@@ -795,7 +894,7 @@ export default function CheckinPage() {
             <>
               <h2 className="text-lg font-bold mb-4">Mid check-in Survey</h2>
               <p className="text-gray-600 mb-4">
-                Please rate how stressed you felt during the color naming task and during the task that asked about deadlines.
+                Please rate how stressed you felt during the reaction task and during the speaking task
               </p>
 
               {[MID_SURVEY_QUESTIONS[0], MID_SURVEY_QUESTIONS[1]].map((question, index) => (
@@ -875,6 +974,26 @@ export default function CheckinPage() {
               <p>{stroopTime}s</p>
             </>
           )}
+          {step === "arithmetic-intro" && (
+            <>
+              <h2 className="text-lg font-bold mb-4">
+                Mental Calculation Task
+              </h2>
+          
+              <p className="text-gray-600 mb-4">
+                You will now see simple math problems.
+                Solve them out loud as quickly as possible.
+                Keep answering continuously as new problems appear.
+              </p>
+          
+              <button
+                onClick={startArithmetic}
+                className="bg-green-500 text-white w-full py-3 rounded-lg"
+              >
+                Start
+              </button>
+            </>
+          )}
 
           {step === "breathing" && (
             <>
@@ -893,6 +1012,28 @@ export default function CheckinPage() {
               </div>
 
               <p>{breathTime}s remaining</p>
+            </>
+          )}
+
+        {step === "arithmetic" && (
+            <>
+              {isRecording && (
+                <div className="w-full mb-4">
+                  <div className="w-full bg-gray-200 rounded-full h-3 mb-2 overflow-hidden">
+                    <div
+                      className="h-full bg-green-500 transition-all duration-150"
+                      style={{ width: micBarWidth }}
+                    />
+                  </div>
+                  <p className="text-sm text-gray-500 mb-3">Mic level</p>
+                </div>
+              )}
+          
+              <div className="text-5xl font-bold mb-6">
+                {mathQuestion}
+              </div>
+          
+              <p>{mathTime}s</p>
             </>
           )}
 
